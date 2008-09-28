@@ -1,4 +1,4 @@
-# $Id$
+# $Id: SkinDetector.pm 106 2008-09-27 18:29:55Z Cosimo $
 
 package Imager::SkinDetector;
 
@@ -6,7 +6,7 @@ use strict;
 use Carp q(croak);
 use base q(Imager);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub new {
     my ($class, %opt) = @_;

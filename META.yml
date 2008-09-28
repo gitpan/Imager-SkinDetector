@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Imager-SkinDetector
-version:             0.01
+version:             0.02
 abstract:            The great new Imager::SkinDetector!
 license:             ~
 author:              
