@@ -1,5 +1,8 @@
 Revision history for Imager-SkinDetector
 
+0.03    2008-10-10 20:23 CEST
+        Added color frequencies method and example
+
 0.02    2008-09-28 09:00 CEST
         Try to fix the world-writable files thing.
 

@@ -6,7 +6,7 @@ use strict;
 use Carp q(croak);
 use base q(Imager);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub new {
     my ($class, %opt) = @_;
@@ -26,6 +26,47 @@ sub new {
     }
 
     bless $self, $class;
+}
+
+sub hue_frequencies {
+    my ($img) = @_;
+
+    return unless $img;
+
+    my $width  = $img->getwidth() - 1;
+    my $height = $img->getheight() - 1;
+    my @frequency = (0) x 36;
+    my ($r, $g, $b,    $h, $s, $v);
+    my $color;
+    my $color_interval;
+    my $total = 0;
+
+    # Sample the image and check pixel colors
+    for (my $x = 0; $x < $width; $x += 5) {
+
+        for (my $y = 0; $y < $height; $y += 5) {
+
+            next unless $color = $img->getpixel(x => $x, y => $y);
+
+            ($r, $g, $b) = $color->rgba();
+            ($h, $s, $v) = rgb2hsv($r, $g, $b);
+
+            $color_interval = int ($h / 10);
+            $frequency[$color_interval]++;
+            $total++;
+        }
+    }
+
+    # Normalize frequencies, removing spurious results
+    if (! $total) {
+        return;
+    }
+
+    for my $value (@frequency) {
+        $value /= $total;
+    }
+
+    return @frequency;
 }
 
 sub minmax {
@@ -113,12 +154,16 @@ sub skinniness {
     my $total_samples = 0;
     my $color;
 
+    # Sample the image and check pixel colors
     for (my $x = 0; $x < $width; $x += 10) {
         for (my $y = 0; $y < $height; $y += 10) {
+
             $color = $img->getpixel(x => $x, y => $y);
+
             if ($color && is_skin($color)) {
                 $skin_colors++;
             }
+
             $total_samples++;
         }
     }
