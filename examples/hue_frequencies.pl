@@ -9,7 +9,7 @@
 # Example:
 #   perl hue_frequencies.pl ferrari.png
 #
-# $Id: $
+# $Id: hue_frequencies.pl 121 2008-10-14 20:45:08Z Cosimo $
 
 use strict;
 use Imager::SkinDetector;
@@ -26,4 +26,7 @@ my $n = 0;
 for (@freq) {
     printf "Interval n. %d\tValue: %.3f%%\n", ++$n, 100*$_;
 }
+
+print "Has different colors: ", $img->has_different_colors(), "\n";
+
 

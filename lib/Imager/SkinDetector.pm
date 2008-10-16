@@ -1,4 +1,4 @@
-# $Id: SkinDetector.pm 106 2008-09-27 18:29:55Z Cosimo $
+# $Id: SkinDetector.pm 124 2008-10-16 20:08:18Z Cosimo $
 
 package Imager::SkinDetector;
 
@@ -6,7 +6,7 @@ use strict;
 use Carp q(croak);
 use base q(Imager);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub new {
     my ($class, %opt) = @_;
@@ -26,6 +26,34 @@ sub new {
     }
 
     bless $self, $class;
+}
+
+# A rough estimate, based on all other meaningful factors
+sub contains_nudity {
+    my ($img) = @_;
+
+    # All factors should have range (0..1)
+    my $skinniness = $img->skinniness();
+    my $coloriness = $img->has_different_colors() || 0.0001;
+
+    # Apply gaussian function to $coloriness.
+
+    # We assume that 0.2 (7 distinct color hues, 0.2*36)
+    # is the center and maximum of our gaussian curve,
+    # rapidly decreasing to zero for values lower and higher
+    # than 7.
+
+    # If the image has a color histogram with many different
+    # hue intervals (max=36) then it's unlikely it contains nudity.
+    # Same goes for images with 1 or 2 distinct color hues.
+
+    # See: http://en.wikipedia.org/wiki/Gaussian_function
+
+    $coloriness = exp(-(($coloriness - 0.2)**2 / 20));
+
+    my $nudity_factor = $skinniness * $coloriness;
+
+    return $nudity_factor;
 }
 
 sub hue_frequencies {
@@ -142,6 +170,24 @@ sub is_skin {
     return 0;
 }
 
+sub has_different_colors {
+    my ($img) = @_;
+
+    # Filter out colors with <= 3%
+    my $value_threshold = 0.04;
+
+    # Extract hue histogram
+    my @freq = $img->hue_frequencies();
+
+    my $distinct = 0;
+    for (@freq) {
+        ++$distinct if $_ > $value_threshold;
+    }
+
+    # 36 is total possible different hue intervals
+    return $distinct / 36;
+}
+
 sub skinniness {
     my ($img) = @_;
 
@@ -181,24 +227,23 @@ __END__
 
 =head1 NAME
 
-Imager::SkinDetector - The great new Imager::SkinDetector!
-
-=head1 VERSION
-
-Version 0.01
+Imager::SkinDetector - Try to detect skin tones and nudity in images
 
 =head1 SYNOPSIS
 
     use Imager::SkinDetector;
 
+    # Use whatever format your Imager supports
     my $name = 'mypic.png';
 
     my $image = Imager::SkinDetector->new(file => $name)
         or die "Can't load image [$name]\n";
 
     my $skinniness = $image->skinniness();
-
     printf "Image is %3.2f%% skinny\n", $skinniness * 100;
+
+    my $prob = $image->contains_nudity();
+    printf "Contains nudity with a %.2f%% probability\n", $prob * 100;
 
 =head1 DESCRIPTION
 
@@ -231,7 +276,7 @@ And it only detects "white" skin colors for now. Sorry.
 Example:
 
     my $color = Imager::Color->new(0, 255, 255);
-    if (Imager::SkinDetector::is_color($color)) {
+    if (Imager::SkinDetector::is_skin($color)) {
         print 'Yes, it seems to be skinny';
     } else {
         print 'Mmhhh, probably not';
@@ -250,6 +295,41 @@ Example:
     my @hsv = Imager::SkinDetector::rgb2hsv(@rgb);
 
 =head1 METHODS
+
+=head2 C<contains_nudity()>
+
+Tries to detect if image contains nudity,
+by using all available methods, like C<hue_frequencies()>
+and C<skinniness()>, and trying to combine their results
+into something reasonable.
+
+Returns a real value between 0 and 1.
+
+The algorithm is basically crap, so I would be seriously
+surprised if it works even for a small percentage of the
+images you throw at it.
+
+Anyway, feel free to send me interesting test cases :-)
+
+=head2 C<hue_frequencies()>
+
+Examines the image and returns a list of 36 relative frequencies
+for color hues in the picture.
+
+Now it outputs 36 values, corresponding to 36 intervals
+in the entire spectrum, conventionally ranged from 0 to 360,
+where first interval corresponds to red.
+
+The relation between hue and number is approximately as follows:
+
+    Hue value   Color
+    ----------------------
+    0 - 60	    red
+    60 - 120	yellow
+    120 - 180	green
+    180 - 240	cyan
+    240 - 300   blue
+    300 - 360   magenta
 
 =head2 C<skinniness()>
 

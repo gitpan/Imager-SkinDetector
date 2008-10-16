@@ -1,7 +1,10 @@
 Revision history for Imager-SkinDetector
 
-0.03    2008-10-10 20:23 CEST
-        Added color frequencies method and example
+0.04    2008-10-16 22:15 CEST
+        Added contains_nudity() method and example
+
+0.03    2008-10-11 14:13 CEST
+        Added color frequencies method, docs and an example
 
 0.02    2008-09-28 09:00 CEST
         Try to fix the world-writable files thing.
