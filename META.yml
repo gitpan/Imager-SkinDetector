@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Imager-SkinDetector
-version:            0.04
+version:            0.05
 abstract:           Try to detect skin tones and nudity in images
 author:
     - Cosimo Streppone <cosimo@cpan.org>
@@ -9,6 +9,7 @@ distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
 requires:
+    File::Temp:  0
     Imager:      0
     Test::More:  0
 no_index:
